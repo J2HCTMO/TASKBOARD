@@ -85,15 +85,18 @@ export default function App() {
       <div className="main-area">
         <div className="top-header">
           <div className="page-title">{PAGE_TITLES[page]}</div>
-          <input
-            className="search-input"
-            placeholder="ابحث عن مشروع، مهمة، أو عضو..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && searchInput.trim()) runSearch(searchInput.trim())
-            }}
-          />
+          <div className="header-search-group">
+            <img src="/logo-rihlat-tahawwul.png" alt="رحلة تحوّل" className="header-logo-img" />
+            <input
+              className="search-input"
+              placeholder="ابحث عن مشروع، مهمة، أو عضو..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchInput.trim()) runSearch(searchInput.trim())
+              }}
+            />
+          </div>
         </div>
 
         <div className="content">
