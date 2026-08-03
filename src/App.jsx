@@ -20,6 +20,7 @@ const PAGE_TITLES = {
 export default function App() {
   const [page, setPage] = useState('dashboard')
   const [selectedProjectId, setSelectedProjectId] = useState(null)
+  const [reportProjectId, setReportProjectId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchInput, setSearchInput] = useState('')
 
@@ -73,7 +74,13 @@ export default function App() {
     setPage('search')
   }
 
+  function goToProjectReport(id) {
+    setReportProjectId(id)
+    setPage('reports')
+  }
+
   function navigate(target) {
+    if (target === 'reports') setReportProjectId(null)
     setPage(target)
   }
 
@@ -128,6 +135,7 @@ export default function App() {
                   onBack={() => navigate('projects')}
                   refresh={fetchAll}
                   showToast={showToast}
+                  onExportReport={goToProjectReport}
                 />
               )}
               {page === 'team' && (
@@ -144,7 +152,7 @@ export default function App() {
                 />
               )}
               {page === 'reports' && (
-                <Reports projects={projects} tasks={tasks} members={members} memberName={memberName} showToast={showToast} />
+                <Reports projects={projects} tasks={tasks} members={members} memberName={memberName} showToast={showToast} initialProjectId={reportProjectId} />
               )}
             </>
           )}
