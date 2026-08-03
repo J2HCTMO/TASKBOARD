@@ -1,22 +1,32 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { exportElementToPDF } from '../utils/pdfExport'
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS, formatDate, BRAND } from '../utils/constants'
 
-export default function Reports({ projects, tasks, members, memberName, showToast }) {
-  const [scope, setScope] = useState('team') // 'team' | 'member'
+export default function Reports({ projects, tasks, members, memberName, showToast, initialProjectId }) {
+  const [scope, setScope] = useState(initialProjectId ? 'project' : 'team') // 'team' | 'member' | 'project'
   const [memberId, setMemberId] = useState(members[0]?.id || '')
+  const [projectId, setProjectId] = useState(initialProjectId || projects[0]?.id || '')
   const [exporting, setExporting] = useState(false)
+
+  useEffect(() => {
+    if (initialProjectId) {
+      setScope('project')
+      setProjectId(initialProjectId)
+    }
+  }, [initialProjectId])
 
   const scopedProjects = useMemo(() => {
     if (scope === 'team') return projects
+    if (scope === 'project') return projects.filter((p) => p.id === projectId)
     return projects.filter((p) => p.owner_id === memberId)
-  }, [scope, memberId, projects])
+  }, [scope, memberId, projectId, projects])
 
   const scopedTasks = useMemo(() => {
     if (scope === 'team') return tasks
+    if (scope === 'project') return tasks.filter((t) => t.project_id === projectId)
     return tasks.filter((t) => t.assignee_id === memberId)
-  }, [scope, memberId, tasks])
+  }, [scope, memberId, projectId, tasks])
 
   const statusData = useMemo(() => {
     return Object.keys(STATUS_LABELS).map((key) => ({
@@ -36,7 +46,11 @@ export default function Reports({ projects, tasks, members, memberName, showToas
 
   async function handleExport() {
     setExporting(true)
-    const label = scope === 'team' ? 'الفريق-كامل' : memberName(memberId)
+    const label = scope === 'team'
+      ? 'الفريق-كامل'
+      : scope === 'project'
+        ? (projects.find((p) => p.id === projectId)?.name || 'مشروع')
+        : memberName(memberId)
     try {
       await exportElementToPDF('pdf-report-content', `تقرير-${label}.pdf`)
       showToast('تم تصدير التقرير')
@@ -52,10 +66,16 @@ export default function Reports({ projects, tasks, members, memberName, showToas
         <select value={scope} onChange={(e) => setScope(e.target.value)}>
           <option value="team">الفريق كاملًا</option>
           <option value="member">عضو محدد</option>
+          <option value="project">مشروع محدد</option>
         </select>
         {scope === 'member' && (
           <select value={memberId} onChange={(e) => setMemberId(e.target.value)}>
             {members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+        )}
+        {scope === 'project' && (
+          <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+            {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         )}
         <button className="btn btn-primary" disabled={exporting} onClick={handleExport}>
@@ -66,7 +86,7 @@ export default function Reports({ projects, tasks, members, memberName, showToas
       <div className="report-preview">
         <div id="pdf-report-content">
           <h1>تقرير رحلة تحوّل</h1>
-          <p>النطاق: {scope === 'team' ? 'الفريق كاملًا' : memberName(memberId)}</p>
+          <p>النطاق: {scope === 'team' ? 'الفريق كاملًا' : scope === 'project' ? (projects.find((p) => p.id === projectId)?.name || '—') : memberName(memberId)}</p>
           <p style={{ color: '#68A8C0', fontSize: 13 }}>تاريخ الإصدار: {formatDate(new Date().toISOString())}</p>
 
           <div style={{ display: 'flex', gap: 20, margin: '20px 0' }}>
