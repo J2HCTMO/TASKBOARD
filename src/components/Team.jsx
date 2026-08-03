@@ -27,7 +27,6 @@ export default function Team({ members, projects, tasks, refresh, showToast }) {
           const ownedProjects = projects.filter((p) => p.owner_id === m.id)
           const assignedTasks = tasks.filter((t) => t.assignee_id === m.id)
           const doneTasks = assignedTasks.filter((t) => t.status === 'done')
-          const pct = assignedTasks.length ? Math.round((doneTasks.length / assignedTasks.length) * 100) : 0
           const isOpen = expanded === m.id
 
           return (
@@ -36,10 +35,6 @@ export default function Team({ members, projects, tasks, refresh, showToast }) {
               <div className="member-stat-row"><span>مشاريع مملوكة</span><strong>{ownedProjects.length}</strong></div>
               <div className="member-stat-row"><span>مهام مسندة</span><strong>{assignedTasks.length}</strong></div>
               <div className="member-stat-row"><span>مهام منجزة</span><strong>{doneTasks.length}</strong></div>
-              <div className="member-stat-row"><span>نسبة الإنجاز</span><strong>{pct}%</strong></div>
-              <div className="progress-bar-track" style={{ marginTop: 8 }}>
-                <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
-              </div>
 
               {isOpen && (
                 <div style={{ marginTop: 14, borderTop: '1px solid #eee', paddingTop: 10 }}>
