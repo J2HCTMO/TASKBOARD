@@ -10,7 +10,10 @@ const ITEMS = [
 export default function Sidebar({ page, onNavigate }) {
   return (
     <div className="sidebar">
-      <div className="sidebar-logo">لوحة مشاريع/مهام إدارة التحول</div>
+      <div className="sidebar-logo">
+        <img src="/logo-cluster.png" alt="تجمع جدة الصحي الثاني" className="sidebar-logo-img" />
+        <span>لوحة مشاريع/مهام إدارة التحول</span>
+      </div>
       {ITEMS.map((item) => (
         <button
           key={item.key}
