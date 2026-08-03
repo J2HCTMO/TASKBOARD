@@ -35,12 +35,11 @@ export default function Dashboard({ projects, tasks, members, memberName }) {
     }))
   }, [members, tasks])
 
-  const progressByMember = useMemo(() => {
+  const doneTasksByMember = useMemo(() => {
     return members.map((m) => {
       const memberTasks = tasks.filter((t) => t.assignee_id === m.id)
       const done = memberTasks.filter((t) => t.status === 'done').length
-      const pct = memberTasks.length ? Math.round((done / memberTasks.length) * 100) : 0
-      return { name: m.name, 'نسبة الإنجاز': pct }
+      return { name: m.name, 'مهام منجزة': done }
     })
   }, [members, tasks])
 
@@ -111,13 +110,13 @@ export default function Dashboard({ projects, tasks, members, memberName }) {
         </div>
 
         <div className="chart-card">
-          <h3>نسبة الإنجاز لكل عضو</h3>
+          <h3>المهام المنجزة لكل عضو</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={progressByMember}>
+            <BarChart data={doneTasksByMember}>
               <XAxis dataKey="name" fontSize={11} />
-              <YAxis domain={[0, 100]} />
+              <YAxis allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="نسبة الإنجاز" fill={BRAND.steelBlue} radius={[6, 6, 0, 0]} />
+              <Bar dataKey="مهام منجزة" fill={BRAND.steelBlue} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
