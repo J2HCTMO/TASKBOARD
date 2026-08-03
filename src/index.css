@@ -41,7 +41,8 @@ input, textarea, select {
 
 .sidebar-logo {
   padding: 0 20px 20px;
-  font-size: 18px;
+  font-size: 15px;
+  line-height: 1.5;
   font-weight: 800;
   color: #88D0C8;
   border-bottom: 1px solid rgba(255,255,255,0.1);
