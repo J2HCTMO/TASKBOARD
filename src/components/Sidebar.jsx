@@ -10,7 +10,7 @@ const ITEMS = [
 export default function Sidebar({ page, onNavigate }) {
   return (
     <div className="sidebar">
-      <div className="sidebar-logo">رحلة تحوّل</div>
+      <div className="sidebar-logo">لوحة مشاريع/مهام إدارة التحول</div>
       {ITEMS.map((item) => (
         <button
           key={item.key}
