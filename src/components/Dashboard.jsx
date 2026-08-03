@@ -28,12 +28,12 @@ export default function Dashboard({ projects, tasks, members, memberName }) {
     })).filter((d) => d.value > 0)
   }, [projects])
 
-  const tasksByMember = useMemo(() => {
+  const projectsByMember = useMemo(() => {
     return members.map((m) => ({
       name: m.name,
-      عدد: tasks.filter((t) => t.assignee_id === m.id).length,
+      عدد: projects.filter((p) => p.owner_id === m.id).length,
     }))
-  }, [members, tasks])
+  }, [members, projects])
 
   const doneTasksByMember = useMemo(() => {
     return members.map((m) => {
@@ -98,9 +98,9 @@ export default function Dashboard({ projects, tasks, members, memberName }) {
         </div>
 
         <div className="chart-card">
-          <h3>توزيع المهام على الأعضاء</h3>
+          <h3>توزيع المشاريع على الأعضاء</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={tasksByMember}>
+            <BarChart data={projectsByMember}>
               <XAxis dataKey="name" fontSize={11} />
               <YAxis allowDecimals={false} />
               <Tooltip />
