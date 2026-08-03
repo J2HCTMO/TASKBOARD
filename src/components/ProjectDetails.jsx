@@ -6,7 +6,7 @@ import {
   PRIORITY_LABELS, PRIORITY_COLORS, formatDate, computeProjectProgress,
 } from '../utils/constants'
 
-export default function ProjectDetails({ projectId, projects, tasks, members, memberName, onBack, refresh, showToast }) {
+export default function ProjectDetails({ projectId, projects, tasks, members, memberName, onBack, refresh, showToast, onExportReport }) {
   const project = projects.find((p) => p.id === projectId)
   const projectTasks = useMemo(() => tasks.filter((t) => t.project_id === projectId), [tasks, projectId])
 
@@ -59,8 +59,9 @@ export default function ProjectDetails({ projectId, projects, tasks, members, me
               <span>الاستحقاق: {formatDate(project.due_date)}</span>
             </div>
           </div>
-          <div style={{ minWidth: 160 }}>
+          <div style={{ minWidth: 160, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <button className="btn btn-secondary" onClick={() => setEditProjectOpen(true)}>تعديل المشروع</button>
+            <button className="btn btn-primary" onClick={() => onExportReport(project.id)}>تصدير تقرير</button>
           </div>
         </div>
 
