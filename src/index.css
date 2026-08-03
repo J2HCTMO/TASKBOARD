@@ -1,152 +1,525 @@
-import React, { useMemo, useState } from 'react'
-import ProjectModal from './ProjectModal'
-import TaskModal from './TaskModal'
-import {
-  STATUS_COLUMNS, STATUS_LABELS, STATUS_COLORS,
-  PRIORITY_LABELS, PRIORITY_COLORS, formatDate, computeProjectProgress,
-} from '../utils/constants'
+* {
+  box-sizing: border-box;
+}
 
-export default function ProjectDetails({ projectId, projects, tasks, members, memberName, onBack, refresh, showToast, onExportReport }) {
-  const project = projects.find((p) => p.id === projectId)
-  const projectTasks = useMemo(() => tasks.filter((t) => t.project_id === projectId), [tasks, projectId])
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
-  const [editProjectOpen, setEditProjectOpen] = useState(false)
-  const [taskModal, setTaskModal] = useState('none') // 'none' | null (new) | task
-  const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState({ assignee: '', status: '', date: '' })
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
 
-  if (!project) {
-    return (
-      <div className="empty-state">
-        هذا المشروع لم يعد موجودًا.
-        <div style={{ marginTop: 12 }}>
-          <button className="btn btn-secondary" onClick={onBack}>الرجوع للمشاريع</button>
-        </div>
-      </div>
-    )
-  }
+body {
+  font-family: 'Almarai', sans-serif;
+  background: #F8F8F8;
+  color: #001830;
+  direction: rtl;
+}
 
-  const progress = computeProjectProgress(projectTasks)
+button {
+  font-family: 'Almarai', sans-serif;
+  cursor: pointer;
+}
 
-  const filteredTasks = projectTasks.filter((t) => {
-    if (search && !t.name.includes(search)) return false
-    if (filters.assignee && t.assignee_id !== filters.assignee) return false
-    if (filters.status && t.status !== filters.status) return false
-    if (filters.date && t.due_date !== filters.date) return false
-    return true
-  })
+input, textarea, select {
+  font-family: 'Almarai', sans-serif;
+}
 
-  return (
-    <div>
-      <div className="breadcrumb">
-        <button onClick={onBack}>المشاريع</button> {'>'} {project.name}
-      </div>
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
 
-      <div className="report-preview" style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <h2 style={{ margin: '0 0 6px', color: '#083838' }}>{project.name}</h2>
-            <p style={{ color: '#68A8C0', margin: '0 0 10px' }}>{project.description || 'لا يوجد وصف'}</p>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13 }}>
-              <span>المالك: <strong>{memberName(project.owner_id)}</strong></span>
-              <span className="badge" style={{ background: PRIORITY_COLORS[project.priority] }}>
-                {PRIORITY_LABELS[project.priority]}
-              </span>
-              <span className="badge" style={{ background: STATUS_COLORS[project.status] }}>
-                {STATUS_LABELS[project.status]}
-              </span>
-              <span>البداية: {formatDate(project.start_date)}</span>
-              <span>الاستحقاق: {formatDate(project.due_date)}</span>
-            </div>
-          </div>
-          <div style={{ minWidth: 160, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button className="btn btn-secondary" onClick={() => setEditProjectOpen(true)}>تعديل المشروع</button>
-            <button className="btn btn-primary" onClick={() => onExportReport(project.id)}>تصدير تقرير</button>
-          </div>
-        </div>
+/* ------------------ Sidebar ------------------ */
+.sidebar {
+  width: 220px;
+  background: #001830;
+  color: #F8F8F8;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  flex-shrink: 0;
+}
 
-        <div style={{ marginTop: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
-            <span>نسبة الإنجاز (محسوبة تلقائيًا)</span>
-            <span><strong>{progress}%</strong></span>
-          </div>
-          <div className="progress-bar-track">
-            <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-      </div>
+.sidebar-logo {
+  padding: 0 20px 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 800;
+  color: #88D0C8;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-        <h3 style={{ margin: 0, color: '#083838' }}>المهام ({projectTasks.length})</h3>
-        <button className="btn btn-primary" onClick={() => setTaskModal(null)}>+ إضافة مهمة</button>
-      </div>
+.sidebar-logo-img {
+  width: 150px !important;
+  max-width: 150px !important;
+  height: auto !important;
+  flex-shrink: 0;
+  object-fit: contain;
+}
 
-      <div className="filters-bar">
-        <input className="search-input" placeholder="ابحث داخل المهام..." value={search} onChange={(e) => setSearch(e.target.value)} />
-        <select value={filters.assignee} onChange={(e) => setFilters((f) => ({ ...f, assignee: e.target.value }))}>
-          <option value="">كل المسؤولين</option>
-          {members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
-        </select>
-        <select value={filters.status} onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}>
-          <option value="">كل الحالات</option>
-          {STATUS_COLUMNS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-        </select>
-        <input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} />
-      </div>
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  color: #F8F8F8;
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: right;
+  font-size: 15px;
+  transition: background 0.15s;
+}
 
-      {filteredTasks.length === 0 ? (
-        <div className="empty-state">لا توجد مهام مطابقة — جرّبي إضافة مهمة جديدة أو تعديل الفلاتر.</div>
-      ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>اسم المهمة</th>
-              <th>المسؤول</th>
-              <th>الحالة</th>
-              <th>% الإنجاز</th>
-              <th>الاستحقاق</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTasks.map((t) => (
-              <tr key={t.id}>
-                <td>{t.name}</td>
-                <td>{memberName(t.assignee_id)}</td>
-                <td><span className="badge" style={{ background: STATUS_COLORS[t.status] }}>{STATUS_LABELS[t.status]}</span></td>
-                <td>{t.progress}%</td>
-                <td>{formatDate(t.due_date)}</td>
-                <td>
-                  <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setTaskModal(t)}>
-                    تعديل
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+.sidebar-item:hover {
+  background: rgba(255,255,255,0.06);
+}
 
-      {editProjectOpen && (
-        <ProjectModal
-          project={project}
-          members={members}
-          onClose={() => setEditProjectOpen(false)}
-          refresh={refresh}
-          showToast={showToast}
-        />
-      )}
+.sidebar-item.active {
+  background: #0C7870;
+  font-weight: 700;
+  border-left: 3px solid #88D0C8;
+}
 
-      {taskModal !== 'none' && (
-        <TaskModal
-          task={taskModal}
-          projectId={projectId}
-          members={members}
-          onClose={() => setTaskModal('none')}
-          refresh={refresh}
-          showToast={showToast}
-        />
-      )}
-    </div>
-  )
+/* ------------------ Main ------------------ */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e6e6e6;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #083838;
+}
+
+.search-input {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d5d5d5;
+  min-width: 260px;
+  font-size: 14px;
+}
+
+.header-search-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-logo-img {
+  height: 44px !important;
+  width: auto !important;
+  max-width: 120px !important;
+  object-fit: contain;
+}
+
+.content {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.breadcrumb {
+  font-size: 13px;
+  color: #68A8C0;
+  margin-bottom: 12px;
+}
+
+.breadcrumb button {
+  background: none;
+  border: none;
+  color: #0C7870;
+  font-weight: 700;
+  padding: 0;
+  font-size: 13px;
+}
+
+/* ------------------ Buttons ------------------ */
+.btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.btn-primary {
+  background: #0C7870;
+  color: #fff;
+}
+.btn-primary:hover { background: #083838; }
+
+.btn-secondary {
+  background: #F8F8F8;
+  color: #083838;
+  border: 1px solid #d5d5d5;
+}
+
+.btn-danger {
+  background: #fff;
+  color: #D64545;
+  border: 1px solid #D64545;
+}
+.btn-danger:hover { background: #D64545; color: #fff; }
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 16px;
+  padding: 4px 8px;
+}
+
+/* ------------------ Cards / Stats ------------------ */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-top: 4px solid #0C7870;
+}
+
+.stat-card .value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #001830;
+}
+
+.stat-card .label {
+  font-size: 13px;
+  color: #68A8C0;
+  margin-top: 4px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.chart-card h3 {
+  font-size: 15px;
+  color: #083838;
+  margin: 0 0 10px;
+}
+
+/* ------------------ Kanban ------------------ */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .kanban-board { grid-template-columns: 1fr; }
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 8px; }
+  .sidebar-logo { display: none; }
+  .sidebar-item { white-space: nowrap; padding: 10px 14px; }
+}
+
+.kanban-column {
+  background: #EFEFEF;
+  border-radius: 12px;
+  padding: 10px;
+  min-height: 200px;
+}
+
+.kanban-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px 12px;
+  font-weight: 800;
+  color: #083838;
+  font-size: 14px;
+}
+
+.kanban-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  border-right: 5px solid #94A3B8;
+  cursor: grab;
+}
+
+.kanban-card .kcard-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #001830;
+}
+
+.kanban-card .kcard-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #68A8C0;
+}
+
+/* ------------------ Progress bar ------------------ */
+.progress-bar-track {
+  background: #E5E5E5;
+  border-radius: 6px;
+  height: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progress-bar-fill {
+  background: #0C7870;
+  height: 100%;
+  border-radius: 6px;
+}
+
+/* ------------------ Badges ------------------ */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ------------------ Filters ------------------ */
+.filters-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.filters-bar select, .filters-bar input[type="date"] {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid #d5d5d5;
+  font-size: 13px;
+}
+
+/* ------------------ Modal ------------------ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,24,48,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-box h2 {
+  margin-top: 0;
+  color: #083838;
+  font-size: 18px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #083838;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #d5d5d5;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.modal-actions-right {
+  display: flex;
+  gap: 8px;
+}
+
+/* ------------------ Table ------------------ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.data-table th {
+  background: #083838;
+  color: #fff;
+  text-align: right;
+  padding: 12px;
+  font-size: 13px;
+}
+
+.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+}
+
+.data-table tr:hover td {
+  background: #F8F8F8;
+}
+
+/* ------------------ Empty state ------------------ */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #68A8C0;
+  font-size: 14px;
+}
+
+/* ------------------ Member cards ------------------ */
+.member-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.member-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-top: 4px solid #68A8C0;
+  cursor: pointer;
+}
+
+.member-card .member-name {
+  font-weight: 800;
+  font-size: 16px;
+  color: #001830;
+  margin-bottom: 10px;
+}
+
+.member-stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #083838;
+  margin-bottom: 4px;
+}
+
+/* ------------------ Toast ------------------ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  background: #083838;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  z-index: 2000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ------------------ Search results ------------------ */
+.search-section {
+  margin-bottom: 24px;
+}
+
+.search-section h3 {
+  color: #0C7870;
+  font-size: 15px;
+  border-bottom: 2px solid #88D0C8;
+  padding-bottom: 6px;
+}
+
+.search-result-row {
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.search-result-row:hover {
+  background: #EFEFEF;
+}
+
+/* ------------------ Reports ------------------ */
+.report-preview {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+#pdf-report-content {
+  background: #ffffff;
+  padding: 30px;
+  width: 750px;
+  direction: rtl;
+  font-family: 'Almarai', sans-serif;
+  color: #001830;
+}
+
+#pdf-report-content h1 {
+  color: #083838;
+  border-bottom: 3px solid #0C7870;
+  padding-bottom: 10px;
 }
