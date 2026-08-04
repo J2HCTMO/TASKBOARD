@@ -4,6 +4,8 @@ import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
 import ProjectsBoard from './components/ProjectsBoard'
 import ProjectDetails from './components/ProjectDetails'
+import TaskDetails from './components/TaskDetails'
+import AllBoard from './components/AllBoard'
 import Team from './components/Team'
 import SearchResults from './components/SearchResults'
 import Reports from './components/Reports'
@@ -15,11 +17,14 @@ const PAGE_TITLES = {
   reports: 'التقارير',
   search: 'نتائج البحث',
   projectDetails: 'تفاصيل المشروع',
+  taskDetails: 'تفاصيل المهمة',
+  allBoard: 'كل المهام والأنشطة',
 }
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
   const [selectedProjectId, setSelectedProjectId] = useState(null)
+  const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [reportProjectId, setReportProjectId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchInput, setSearchInput] = useState('')
@@ -27,6 +32,7 @@ export default function App() {
   const [members, setMembers] = useState([])
   const [projects, setProjects] = useState([])
   const [tasks, setTasks] = useState([])
+  const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState(null)
 
@@ -37,26 +43,28 @@ export default function App() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    const [m, p, t] = await Promise.all([
+    const [m, p, t, a] = await Promise.all([
       supabase.from('members').select('*').order('created_at'),
       supabase.from('projects').select('*').order('created_at'),
       supabase.from('tasks').select('*').order('created_at'),
+      supabase.from('activities').select('*').order('created_at'),
     ])
     if (m.data) setMembers(m.data)
     if (p.data) setProjects(p.data)
     if (t.data) setTasks(t.data)
+    if (a.data) setActivities(a.data)
     setLoading(false)
   }, [])
 
   useEffect(() => {
     fetchAll()
 
-    // اشتراك لحظي: أي تغيير من أي عضو يظهر فورًا عند البقية
     const channel = supabase
       .channel('realtime-tahawwul')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, fetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'activities' }, fetchAll)
       .subscribe()
 
     return () => {
@@ -67,6 +75,11 @@ export default function App() {
   function goToProject(id) {
     setSelectedProjectId(id)
     setPage('projectDetails')
+  }
+
+  function goToTask(id) {
+    setSelectedTaskId(id)
+    setPage('taskDetails')
   }
 
   function runSearch(q) {
@@ -85,6 +98,8 @@ export default function App() {
   }
 
   const memberName = (id) => members.find((m) => m.id === id)?.name || '—'
+  const projectName = (id) => projects.find((p) => p.id === id)?.name || '—'
+  const taskName = (id) => tasks.find((t) => t.id === id)?.name || '—'
 
   return (
     <div className="app-shell">
@@ -130,12 +145,42 @@ export default function App() {
                   projectId={selectedProjectId}
                   projects={projects}
                   tasks={tasks}
+                  activities={activities}
                   members={members}
                   memberName={memberName}
                   onBack={() => navigate('projects')}
                   refresh={fetchAll}
                   showToast={showToast}
                   onExportReport={goToProjectReport}
+                  onOpenTask={goToTask}
+                />
+              )}
+              {page === 'taskDetails' && (
+                <TaskDetails
+                  taskId={selectedTaskId}
+                  tasks={tasks}
+                  projects={projects}
+                  activities={activities}
+                  members={members}
+                  memberName={memberName}
+                  onBack={() => goToProject(tasks.find((t) => t.id === selectedTaskId)?.project_id)}
+                  refresh={fetchAll}
+                  showToast={showToast}
+                />
+              )}
+              {page === 'allBoard' && (
+                <AllBoard
+                  tasks={tasks}
+                  activities={activities}
+                  projects={projects}
+                  members={members}
+                  memberName={memberName}
+                  projectName={projectName}
+                  taskName={taskName}
+                  onOpenProject={goToProject}
+                  onOpenTask={goToTask}
+                  refresh={fetchAll}
+                  showToast={showToast}
                 />
               )}
               {page === 'team' && (
