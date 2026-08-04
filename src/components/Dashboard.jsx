@@ -75,7 +75,7 @@ export default function Dashboard({ projects, tasks, members, memberName }) {
           <h3>المشاريع حسب الحالة</h3>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie data={projectsByStatus} dataKey="value" nameKey="name" outerRadius={80} label>
+              <Pie data={projectsByStatus} dataKey="value" nameKey="name" outerRadius={80}>
                 {projectsByStatus.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip />
@@ -88,7 +88,7 @@ export default function Dashboard({ projects, tasks, members, memberName }) {
           <h3>المشاريع حسب الأولوية</h3>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie data={projectsByPriority} dataKey="value" nameKey="name" outerRadius={80} label>
+              <Pie data={projectsByPriority} dataKey="value" nameKey="name" outerRadius={80}>
                 {projectsByPriority.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip />
