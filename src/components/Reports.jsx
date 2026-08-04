@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { exportElementToPDF } from '../utils/pdfExport'
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS, formatDate, BRAND } from '../utils/constants'
 
@@ -99,10 +99,11 @@ export default function Reports({ projects, tasks, members, memberName, showToas
             <div style={{ width: 320, height: 220 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={statusData} dataKey="value" nameKey="name" outerRadius={70} label>
+                  <Pie data={statusData} dataKey="value" nameKey="name" outerRadius={70}>
                     {statusData.map((d, i) => <Cell key={i} fill={d.color} />)}
                   </Pie>
                   <Tooltip />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </div>
