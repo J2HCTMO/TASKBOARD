@@ -3,10 +3,10 @@ import ProjectModal from './ProjectModal'
 import TaskModal from './TaskModal'
 import {
   STATUS_COLUMNS, STATUS_LABELS, STATUS_COLORS,
-  PRIORITY_LABELS, PRIORITY_COLORS, formatDate, computeProjectProgress,
+  PRIORITY_LABELS, PRIORITY_COLORS, formatDate, computeProjectProgress, effectiveTaskProgress,
 } from '../utils/constants'
 
-export default function ProjectDetails({ projectId, projects, tasks, members, memberName, onBack, refresh, showToast, onExportReport }) {
+export default function ProjectDetails({ projectId, projects, tasks, activities, members, memberName, onBack, refresh, showToast, onExportReport, onOpenTask }) {
   const project = projects.find((p) => p.id === projectId)
   const projectTasks = useMemo(() => tasks.filter((t) => t.project_id === projectId), [tasks, projectId])
 
@@ -104,25 +104,33 @@ export default function ProjectDetails({ projectId, projects, tasks, members, me
               <th>المسؤول</th>
               <th>الحالة</th>
               <th>% الإنجاز</th>
+              <th>الأنشطة</th>
               <th>الاستحقاق</th>
               <th>إجراءات</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTasks.map((t) => (
-              <tr key={t.id}>
-                <td>{t.name}</td>
-                <td>{memberName(t.assignee_id)}</td>
-                <td><span className="badge" style={{ background: STATUS_COLORS[t.status] }}>{STATUS_LABELS[t.status]}</span></td>
-                <td>{t.progress}%</td>
-                <td>{formatDate(t.due_date)}</td>
-                <td>
-                  <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setTaskModal(t)}>
-                    تعديل
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {filteredTasks.map((t) => {
+              const taskActivitiesCount = activities.filter((a) => a.task_id === t.id).length
+              return (
+                <tr key={t.id}>
+                  <td>{t.name}</td>
+                  <td>{memberName(t.assignee_id)}</td>
+                  <td><span className="badge" style={{ background: STATUS_COLORS[t.status] }}>{STATUS_LABELS[t.status]}</span></td>
+                  <td>{effectiveTaskProgress(t, activities)}%</td>
+                  <td>{taskActivitiesCount}</td>
+                  <td>{formatDate(t.due_date)}</td>
+                  <td style={{ display: 'flex', gap: 6 }}>
+                    <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => onOpenTask(t.id)}>
+                      الأنشطة
+                    </button>
+                    <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setTaskModal(t)}>
+                      تعديل
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}
