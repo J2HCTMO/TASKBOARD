@@ -9,7 +9,6 @@ export default function TaskModal({ task, projectId, members, onClose, refresh, 
     description: task?.description || '',
     assignee_id: task?.assignee_id || (members[0]?.id ?? ''),
     status: task?.status || 'todo',
-    progress: task?.progress ?? 0,
     start_date: task?.start_date || '',
     due_date: task?.due_date || '',
     notes: task?.notes || '',
@@ -26,7 +25,9 @@ export default function TaskModal({ task, projectId, members, onClose, refresh, 
       return
     }
     setSaving(true)
-    const payload = { ...form, progress: Number(form.progress) }
+    // نسبة الإنجاز تُشتق تلقائيًا من الحالة: 100% عند الاكتمال، وإلا 0%
+    // (تُستبدل تلقائيًا بنسبة الأنشطة إن وُجدت أنشطة لهذه المهمة)
+    const payload = { ...form, progress: form.status === 'done' ? 100 : 0 }
     if (isEdit) {
       const { error } = await supabase.from('tasks').update(payload).eq('id', task.id)
       if (error) showToast('حدث خطأ أثناء الحفظ')
@@ -81,17 +82,6 @@ export default function TaskModal({ task, projectId, members, onClose, refresh, 
               <option key={s.key} value={s.key}>{s.label}</option>
             ))}
           </select>
-        </div>
-
-        <div className="form-group">
-          <label>نسبة الإنجاز ({form.progress}%)</label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={form.progress}
-            onChange={(e) => update('progress', e.target.value)}
-          />
         </div>
 
         <div className="form-group">
