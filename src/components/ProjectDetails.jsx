@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react'
+import { DndContext, useDraggable, useDroppable, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { supabase } from '../supabaseClient'
 import ProjectModal from './ProjectModal'
 import TaskModal from './TaskModal'
 import {
@@ -13,7 +15,9 @@ export default function ProjectDetails({ projectId, projects, tasks, activities,
   const [editProjectOpen, setEditProjectOpen] = useState(false)
   const [taskModal, setTaskModal] = useState('none') // 'none' | null (new) | task
   const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState({ assignee: '', status: '', date: '' })
+  const [filters, setFilters] = useState({ assignee: '', date: '' })
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   if (!project) {
     return (
@@ -31,10 +35,23 @@ export default function ProjectDetails({ projectId, projects, tasks, activities,
   const filteredTasks = projectTasks.filter((t) => {
     if (search && !t.name.includes(search)) return false
     if (filters.assignee && t.assignee_id !== filters.assignee) return false
-    if (filters.status && t.status !== filters.status) return false
     if (filters.date && t.due_date !== filters.date) return false
     return true
   })
+
+  async function handleDragEnd(event) {
+    const { active, over } = event
+    if (!over) return
+    const newStatus = over.id
+    const task = projectTasks.find((t) => t.id === active.id)
+    if (!task || task.status === newStatus) return
+    const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', task.id)
+    if (error) showToast('تعذّر تحديث الحالة')
+    else {
+      showToast('تم تحديث حالة المهمة')
+      refresh()
+    }
+  }
 
   return (
     <div>
@@ -87,52 +104,27 @@ export default function ProjectDetails({ projectId, projects, tasks, activities,
           <option value="">كل المسؤولين</option>
           {members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
         </select>
-        <select value={filters.status} onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}>
-          <option value="">كل الحالات</option>
-          {STATUS_COLUMNS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-        </select>
         <input type="date" value={filters.date} onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))} />
       </div>
 
       {filteredTasks.length === 0 ? (
         <div className="empty-state">لا توجد مهام مطابقة — جرّبي إضافة مهمة جديدة أو تعديل الفلاتر.</div>
       ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>اسم المهمة</th>
-              <th>المسؤول</th>
-              <th>الحالة</th>
-              <th>% الإنجاز</th>
-              <th>الأنشطة</th>
-              <th>الاستحقاق</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTasks.map((t) => {
-              const taskActivitiesCount = activities.filter((a) => a.task_id === t.id).length
-              return (
-                <tr key={t.id}>
-                  <td>{t.name}</td>
-                  <td>{memberName(t.assignee_id)}</td>
-                  <td><span className="badge" style={{ background: STATUS_COLORS[t.status] }}>{STATUS_LABELS[t.status]}</span></td>
-                  <td>{effectiveTaskProgress(t, activities)}%</td>
-                  <td>{taskActivitiesCount}</td>
-                  <td>{formatDate(t.due_date)}</td>
-                  <td style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => onOpenTask(t.id)}>
-                      الأنشطة
-                    </button>
-                    <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setTaskModal(t)}>
-                      تعديل
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <div className="kanban-board">
+            {STATUS_COLUMNS.map((col) => (
+              <Column
+                key={col.key}
+                col={col}
+                items={filteredTasks.filter((t) => t.status === col.key)}
+                activities={activities}
+                memberName={memberName}
+                onOpenTask={onOpenTask}
+                onEdit={setTaskModal}
+              />
+            ))}
+          </div>
+        </DndContext>
       )}
 
       {editProjectOpen && (
@@ -155,6 +147,63 @@ export default function ProjectDetails({ projectId, projects, tasks, activities,
           showToast={showToast}
         />
       )}
+    </div>
+  )
+}
+
+function Column({ col, items, activities, memberName, onOpenTask, onEdit }) {
+  const { setNodeRef, isOver } = useDroppable({ id: col.key })
+  return (
+    <div ref={setNodeRef} className="kanban-column" style={{ background: isOver ? '#E0EFEC' : '#EFEFEF' }}>
+      <div className="kanban-column-header">
+        <span>{col.label}</span>
+        <span>{items.length}</span>
+      </div>
+      {items.map((t) => (
+        <TaskCard key={t.id} task={t} activities={activities} memberName={memberName} onOpenTask={onOpenTask} onEdit={onEdit} />
+      ))}
+    </div>
+  )
+}
+
+function TaskCard({ task, activities, memberName, onOpenTask, onEdit }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id })
+  const style = {
+    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 'auto',
+  }
+  const activitiesCount = activities.filter((a) => a.task_id === task.id).length
+  const progress = effectiveTaskProgress(task, activities)
+
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="kanban-card">
+      <div className="kcard-title">{task.name}</div>
+      <div className="kcard-meta">
+        <span>{memberName(task.assignee_id)}</span>
+        <span>{formatDate(task.due_date)}</span>
+      </div>
+      <div style={{ fontSize: 11, color: '#68A8C0', marginTop: 4 }}>
+        {activitiesCount} نشاط · {progress}%
+      </div>
+      <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+        <button
+          className="btn btn-secondary"
+          style={{ padding: '4px 10px', fontSize: 12 }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => onOpenTask(task.id)}
+        >
+          الأنشطة
+        </button>
+        <button
+          className="btn btn-secondary"
+          style={{ padding: '4px 10px', fontSize: 12 }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => onEdit(task)}
+        >
+          تعديل
+        </button>
+      </div>
     </div>
   )
 }
