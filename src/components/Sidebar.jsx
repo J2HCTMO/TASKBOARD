@@ -3,6 +3,7 @@ import React from 'react'
 const ITEMS = [
   { key: 'dashboard', label: 'لوحة المعلومات', icon: '🏠' },
   { key: 'projects', label: 'المشاريع', icon: '📋' },
+  { key: 'allBoard', label: 'كل المهام والأنشطة', icon: '🗂️' },
   { key: 'team', label: 'الفريق', icon: '👥' },
   { key: 'reports', label: 'التقارير', icon: '📄' },
 ]
