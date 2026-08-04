@@ -5,7 +5,6 @@ import TaskModal from './TaskModal'
 import ActivityModal from './ActivityModal'
 import {
   STATUS_COLUMNS, STATUS_LABELS, STATUS_COLORS, formatDate,
-  computeTaskProgressFromActivities,
 } from '../utils/constants'
 
 export default function TaskDetails({ taskId, tasks, projects, activities, members, memberName, onBack, refresh, showToast }) {
@@ -28,9 +27,6 @@ export default function TaskDetails({ taskId, tasks, projects, activities, membe
       </div>
     )
   }
-
-  const computedProgress = computeTaskProgressFromActivities(taskActivities)
-  const displayedProgress = computedProgress !== null ? computedProgress : task.progress
 
   async function handleDragEnd(event) {
     const { active, over } = event
@@ -70,15 +66,6 @@ export default function TaskDetails({ taskId, tasks, projects, activities, membe
           </div>
         </div>
 
-        <div style={{ marginTop: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
-            <span>نسبة الإنجاز {computedProgress !== null ? '(محسوبة من الأنشطة)' : '(يدوية)'}</span>
-            <span><strong>{displayedProgress}%</strong></span>
-          </div>
-          <div className="progress-bar-track">
-            <div className="progress-bar-fill" style={{ width: `${displayedProgress}%` }} />
-          </div>
-        </div>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
@@ -86,23 +73,19 @@ export default function TaskDetails({ taskId, tasks, projects, activities, membe
         <button className="btn btn-primary" onClick={() => setActivityModal(null)}>+ إضافة نشاط</button>
       </div>
 
-      {taskActivities.length === 0 ? (
-        <div className="empty-state">لا توجد أنشطة بعد — أضيفي أول نشاط لهذه المهمة.</div>
-      ) : (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <div className="kanban-board">
-            {STATUS_COLUMNS.map((col) => (
-              <Column
-                key={col.key}
-                col={col}
-                items={taskActivities.filter((a) => a.status === col.key)}
-                memberName={memberName}
-                onEdit={setActivityModal}
-              />
-            ))}
-          </div>
-        </DndContext>
-      )}
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="kanban-board">
+          {STATUS_COLUMNS.map((col) => (
+            <Column
+              key={col.key}
+              col={col}
+              items={taskActivities.filter((a) => a.status === col.key)}
+              memberName={memberName}
+              onEdit={setActivityModal}
+            />
+          ))}
+        </div>
+      </DndContext>
 
       {editTaskOpen && (
         <TaskModal
