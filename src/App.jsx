@@ -6,6 +6,7 @@ import ProjectsBoard from './components/ProjectsBoard'
 import ProjectDetails from './components/ProjectDetails'
 import TaskDetails from './components/TaskDetails'
 import AllBoard from './components/AllBoard'
+import Calendar from './components/Calendar'
 import Team from './components/Team'
 import SearchResults from './components/SearchResults'
 import Reports from './components/Reports'
@@ -19,6 +20,7 @@ const PAGE_TITLES = {
   projectDetails: 'تفاصيل المشروع',
   taskDetails: 'تفاصيل المهمة',
   allBoard: 'كل المهام والأنشطة',
+  calendar: 'التقويم',
 }
 
 export default function App() {
@@ -33,6 +35,7 @@ export default function App() {
   const [projects, setProjects] = useState([])
   const [tasks, setTasks] = useState([])
   const [activities, setActivities] = useState([])
+  const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState(null)
 
@@ -43,16 +46,18 @@ export default function App() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    const [m, p, t, a] = await Promise.all([
+    const [m, p, t, a, ev] = await Promise.all([
       supabase.from('members').select('*').order('created_at'),
       supabase.from('projects').select('*').order('created_at'),
       supabase.from('tasks').select('*').order('created_at'),
       supabase.from('activities').select('*').order('created_at'),
+      supabase.from('events').select('*').order('event_date'),
     ])
     if (m.data) setMembers(m.data)
     if (p.data) setProjects(p.data)
     if (t.data) setTasks(t.data)
     if (a.data) setActivities(a.data)
+    if (ev.data) setEvents(ev.data)
     setLoading(false)
   }, [])
 
@@ -65,6 +70,7 @@ export default function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'activities' }, fetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, fetchAll)
       .subscribe()
 
     return () => {
@@ -182,6 +188,9 @@ export default function App() {
                   refresh={fetchAll}
                   showToast={showToast}
                 />
+              )}
+              {page === 'calendar' && (
+                <Calendar events={events} members={members} memberName={memberName} refresh={fetchAll} showToast={showToast} />
               )}
               {page === 'team' && (
                 <Team members={members} projects={projects} tasks={tasks} refresh={fetchAll} showToast={showToast} />
