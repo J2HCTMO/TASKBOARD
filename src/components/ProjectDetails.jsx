@@ -30,8 +30,6 @@ export default function ProjectDetails({ projectId, projects, tasks, activities,
     )
   }
 
-  const progress = computeProjectProgress(projectTasks)
-
   const filteredTasks = projectTasks.filter((t) => {
     if (search && !t.name.includes(search)) return false
     if (filters.assignee && t.assignee_id !== filters.assignee) return false
@@ -79,16 +77,6 @@ export default function ProjectDetails({ projectId, projects, tasks, activities,
           <div style={{ minWidth: 160, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <button className="btn btn-secondary" onClick={() => setEditProjectOpen(true)}>تعديل المشروع</button>
             <button className="btn btn-primary" onClick={() => onExportReport(project.id)}>تصدير تقرير</button>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
-            <span>نسبة الإنجاز (محسوبة تلقائيًا)</span>
-            <span><strong>{progress}%</strong></span>
-          </div>
-          <div className="progress-bar-track">
-            <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </div>
