@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { STATUS_LABELS } from '../utils/constants'
 
 export default function Team({ members, projects, tasks, refresh, showToast }) {
-  const [expanded, setExpanded] = useState(null)
+  const [expanded, setExpanded] = useState({}) // { [memberId]: 'owned' | 'assigned' | 'doneProjects' | 'doneTasks' | null }
   const [addOpen, setAddOpen] = useState(false)
   const [newName, setNewName] = useState('')
 
@@ -16,6 +17,13 @@ export default function Team({ members, projects, tasks, refresh, showToast }) {
     refresh()
   }
 
+  function toggle(memberId, category) {
+    setExpanded((prev) => ({
+      ...prev,
+      [memberId]: prev[memberId] === category ? null : category,
+    }))
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
@@ -25,25 +33,63 @@ export default function Team({ members, projects, tasks, refresh, showToast }) {
       <div className="member-grid">
         {members.map((m) => {
           const ownedProjects = projects.filter((p) => p.owner_id === m.id)
+          const doneProjects = ownedProjects.filter((p) => p.status === 'done')
           const assignedTasks = tasks.filter((t) => t.assignee_id === m.id)
           const doneTasks = assignedTasks.filter((t) => t.status === 'done')
-          const isOpen = expanded === m.id
+
+          const activeCategory = expanded[m.id]
+          const listsByCategory = {
+            owned: { label: 'المشاريع المملوكة', items: ownedProjects },
+            assigned: { label: 'المهام المسندة', items: assignedTasks },
+            doneProjects: { label: 'المشاريع المنجزة', items: doneProjects },
+            doneTasks: { label: 'المهام المنجزة', items: doneTasks },
+          }
+          const activeList = activeCategory ? listsByCategory[activeCategory] : null
 
           return (
-            <div key={m.id} className="member-card" onClick={() => setExpanded(isOpen ? null : m.id)}>
+            <div key={m.id} className="member-card">
               <div className="member-name">{m.name}</div>
-              <div className="member-stat-row"><span>مشاريع مملوكة</span><strong>{ownedProjects.length}</strong></div>
-              <div className="member-stat-row"><span>مهام مسندة</span><strong>{assignedTasks.length}</strong></div>
-              <div className="member-stat-row"><span>مهام منجزة</span><strong>{doneTasks.length}</strong></div>
 
-              {isOpen && (
-                <div style={{ marginTop: 14, borderTop: '1px solid #eee', paddingTop: 10 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>المشاريع:</div>
-                  {ownedProjects.length === 0 ? (
-                    <div style={{ fontSize: 12, color: '#999' }}>لا توجد مشاريع</div>
-                  ) : ownedProjects.map((p) => (
-                    <div key={p.id} style={{ fontSize: 12, marginBottom: 3 }}>• {p.name}</div>
-                  ))}
+              <StatRow
+                label="مشاريع مملوكة"
+                value={ownedProjects.length}
+                active={activeCategory === 'owned'}
+                onClick={() => toggle(m.id, 'owned')}
+              />
+              <StatRow
+                label="مهام مسندة"
+                value={assignedTasks.length}
+                active={activeCategory === 'assigned'}
+                onClick={() => toggle(m.id, 'assigned')}
+              />
+              <StatRow
+                label="مشاريع منجزة"
+                value={doneProjects.length}
+                active={activeCategory === 'doneProjects'}
+                onClick={() => toggle(m.id, 'doneProjects')}
+              />
+              <StatRow
+                label="مهام منجزة"
+                value={doneTasks.length}
+                active={activeCategory === 'doneTasks'}
+                onClick={() => toggle(m.id, 'doneTasks')}
+              />
+
+              {activeList && (
+                <div style={{ marginTop: 12, borderTop: '1px solid #eee', paddingTop: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, color: '#0C7870' }}>
+                    {activeList.label}:
+                  </div>
+                  {activeList.items.length === 0 ? (
+                    <div style={{ fontSize: 12, color: '#999' }}>لا توجد عناصر</div>
+                  ) : (
+                    activeList.items.map((item) => (
+                      <div key={item.id} style={{ fontSize: 12, marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>• {item.name}</span>
+                        <span style={{ color: '#68A8C0' }}>{STATUS_LABELS[item.status]}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>
@@ -69,6 +115,24 @@ export default function Team({ members, projects, tasks, refresh, showToast }) {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function StatRow({ label, value, active, onClick }) {
+  return (
+    <div
+      className="member-stat-row"
+      onClick={onClick}
+      style={{
+        cursor: 'pointer',
+        padding: '6px 8px',
+        borderRadius: 6,
+        background: active ? '#E0EFEC' : 'transparent',
+      }}
+    >
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   )
 }
