@@ -4,6 +4,7 @@ const ITEMS = [
   { key: 'dashboard', label: 'لوحة المعلومات', icon: '🏠' },
   { key: 'projects', label: 'المشاريع', icon: '📋' },
   { key: 'allBoard', label: 'كل المهام والأنشطة', icon: '🗂️' },
+  { key: 'calendar', label: 'التقويم', icon: '📅' },
   { key: 'team', label: 'الفريق', icon: '👥' },
   { key: 'reports', label: 'التقارير', icon: '📄' },
 ]
