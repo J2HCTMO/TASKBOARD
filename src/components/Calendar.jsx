@@ -100,13 +100,13 @@ export default function Calendar({ events, members, memberName, refresh, showToa
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 6 }}>
         {WEEKDAYS.map((w) => (
-          <div key={w} style={{ textAlign: 'center', fontWeight: 700, fontSize: 13, color: '#68A8C0', padding: 6 }}>{w}</div>
+          <div key={w} style={{ textAlign: 'center', fontWeight: 700, fontSize: 13, color: '#68A8C0', padding: 6, minWidth: 0 }}>{w}</div>
         ))}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
         {cells.map((d, idx) => {
-          if (d === null) return <div key={idx} />
+          if (d === null) return <div key={idx} style={{ minWidth: 0 }} />
           const dateObj = new Date(year, month, d)
           const dateKey = toDateKey(dateObj)
           const dayEvents = eventsByDate[dateKey] || []
@@ -117,11 +117,14 @@ export default function Calendar({ events, members, memberName, refresh, showToa
               onClick={() => openDayEvents(dateKey)}
               style={{
                 minHeight: 90,
+                minWidth: 0,
+                overflow: 'hidden',
                 background: isToday ? '#E0EFEC' : '#fff',
                 border: isToday ? '2px solid #0C7870' : '1px solid #eee',
                 borderRadius: 8,
                 padding: 6,
                 cursor: 'pointer',
+                boxSizing: 'border-box',
               }}
             >
               <div style={{ fontWeight: 700, fontSize: 13, color: '#083838' }}>{d}</div>
@@ -141,6 +144,8 @@ export default function Calendar({ events, members, memberName, refresh, showToa
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
+                      maxWidth: '100%',
+                      boxSizing: 'border-box',
                     }}
                   >
                     {ev.title}
@@ -157,7 +162,7 @@ export default function Calendar({ events, members, memberName, refresh, showToa
 
       <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: 12, color: '#68A8C0', flexWrap: 'wrap' }}>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#0C7870', borderRadius: 3, marginLeft: 4 }} /> مواعيد المنصة</span>
-        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#68A8C0', borderRadius: 3, marginLeft: 4 }} /> Google calendar</span>
+        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#68A8C0', borderRadius: 3, marginLeft: 4 }} /> مواعيد قوقل (حجوزات)</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#D9A441', borderRadius: 3, marginLeft: 4 }} /> حجز موعد استفسار</span>
       </div>
 
