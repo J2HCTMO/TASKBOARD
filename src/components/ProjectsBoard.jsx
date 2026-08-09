@@ -61,7 +61,10 @@ export default function ProjectsBoard({ projects, members, memberName, onOpenPro
         <div className="empty-state">لا توجد مشاريع بعد — ابدئي بإضافة أول مشروع.</div>
       ) : (
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <div className="kanban-board">
+          <div
+            className="kanban-board"
+            style={{ display: 'grid', gridTemplateColumns: `repeat(${STATUS_COLUMNS.length}, 1fr)`, gap: 16, width: '100%' }}
+          >
             {STATUS_COLUMNS.map((col) => (
               <Column
                 key={col.key}
