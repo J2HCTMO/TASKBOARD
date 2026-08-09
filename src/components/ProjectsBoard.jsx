@@ -66,7 +66,9 @@ export default function ProjectsBoard({ projects, members, memberName, onOpenPro
               <Column
                 key={col.key}
                 col={col}
-                projects={filtered.filter((p) => p.status === col.key)}
+                projects={filtered.filter((p) =>
+                  p.status === col.key || (col.key === 'build' && p.status === 'test')
+                )}
                 memberName={memberName}
                 onOpenProject={onOpenProject}
                 onEdit={setModalProject}
