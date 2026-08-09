@@ -30,7 +30,10 @@ export async function fetchGoogleCalendarEvents() {
       const startTime = ev.start?.dateTime ? ev.start.dateTime.slice(11, 16) : null
       return {
         id: `google-${ev.id}`,
-        title: ev.summary || 'موعد بدون عنوان',
+       title: (ev.summary || 'موعد بدون عنوان')
+  .normalize('NFKC')
+  .replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g, '')
+  .trim(),
         description: ev.description || '',
         event_date: dateOnly,
         start_time: startTime,
