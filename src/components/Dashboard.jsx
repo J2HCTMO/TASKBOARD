@@ -1,11 +1,31 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   PieChart, Pie, Cell, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import { STATUS_LABELS, STATUS_COLORS, PRIORITY_LABELS, PRIORITY_COLORS, BRAND } from '../utils/constants'
+import { fetchGoogleCalendarEvents } from '../utils/googleCalendar'
 
 export default function Dashboard({ projects, tasks, members, memberName }) {
+  const [googleEvents, setGoogleEvents] = useState([])
+
+  useEffect(() => {
+    fetchGoogleCalendarEvents().then(setGoogleEvents)
+  }, [])
+
+  const consultEvents = useMemo(
+    () => googleEvents.filter((e) => e.title.includes('استفسار')),
+    [googleEvents]
+  )
+
+  const now = new Date()
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
+  const consultThisMonth = consultEvents.filter((e) => e.event_date?.startsWith(currentMonthKey)).length
+  const consultTotal = consultEvents.length
+  const consultUpcoming = consultEvents.filter((e) => e.event_date >= todayKey).length
+
   const totalProjects = projects.length
   const doneProjects = projects.filter((p) => p.status === 'done').length
   const inProgressProjects = projects.filter((p) => p.status !== 'done').length
@@ -68,6 +88,9 @@ export default function Dashboard({ projects, tasks, members, memberName }) {
         <StatCard label="مشاريع قيد التنفيذ" value={inProgressProjects} />
         <StatCard label="إجمالي المهام" value={totalTasks} />
         <StatCard label="مهام مكتملة" value={doneTasks} />
+        <StatCard label="جلسات استشارية هذا الشهر" value={consultThisMonth} />
+        <StatCard label="إجمالي الجلسات الاستشارية" value={consultTotal} />
+        <StatCard label="جلسات استشارية قادمة" value={consultUpcoming} />
       </div>
 
       <div className="charts-grid">
