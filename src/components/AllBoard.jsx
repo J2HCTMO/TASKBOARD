@@ -3,14 +3,21 @@ import { DndContext, useDraggable, useDroppable, PointerSensor, useSensor, useSe
 import { supabase } from '../supabaseClient'
 import { STATUS_COLUMNS, STATUS_LABELS, formatDate } from '../utils/constants'
 
-export default function AllBoard({ tasks, activities, members, memberName, projectName, taskName, onOpenProject, onOpenTask, refresh, showToast }) {
+export default function AllBoard({ tasks, activities, projects, members, memberName, projectName, taskName, onOpenProject, onOpenTask, refresh, showToast }) {
   const [filterType, setFilterType] = useState('') // '' | 'task' | 'activity'
   const [filterAssignee, setFilterAssignee] = useState('')
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const combinedItems = useMemo(() => {
-    const taskItems = tasks.map((t) => ({
+    // نستثني مهام وأنشطة أي مشروع حالته "مكتمل"
+    const visibleTasks = tasks.filter((t) => {
+      const proj = projects.find((p) => p.id === t.project_id)
+      return proj?.status !== 'done'
+    })
+    const visibleTaskIds = new Set(visibleTasks.map((t) => t.id))
+
+    const taskItems = visibleTasks.map((t) => ({
       dndId: `task-${t.id}`,
       id: t.id,
       type: 'task',
@@ -20,22 +27,24 @@ export default function AllBoard({ tasks, activities, members, memberName, proje
       due_date: t.due_date,
       context: projectName(t.project_id),
     }))
-    const activityItems = activities.map((a) => ({
-      dndId: `activity-${a.id}`,
-      id: a.id,
-      type: 'activity',
-      name: a.name,
-      status: a.status,
-      assignee_id: a.assignee_id,
-      due_date: a.due_date,
-      context: taskName(a.task_id),
-      task_id: a.task_id,
-    }))
+    const activityItems = activities
+      .filter((a) => visibleTaskIds.has(a.task_id))
+      .map((a) => ({
+        dndId: `activity-${a.id}`,
+        id: a.id,
+        type: 'activity',
+        name: a.name,
+        status: a.status,
+        assignee_id: a.assignee_id,
+        due_date: a.due_date,
+        context: taskName(a.task_id),
+        task_id: a.task_id,
+      }))
     let all = [...taskItems, ...activityItems]
     if (filterType) all = all.filter((i) => i.type === filterType)
     if (filterAssignee) all = all.filter((i) => i.assignee_id === filterAssignee)
     return all
-  }, [tasks, activities, projectName, taskName, filterType, filterAssignee])
+  }, [tasks, activities, projects, projectName, taskName, filterType, filterAssignee])
 
   async function handleDragEnd(event) {
     const { active, over } = event
