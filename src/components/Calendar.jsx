@@ -125,24 +125,28 @@ export default function Calendar({ events, members, memberName, refresh, showToa
               }}
             >
               <div style={{ fontWeight: 700, fontSize: 13, color: '#083838' }}>{d}</div>
-              {dayEvents.slice(0, 2).map((ev) => (
-                <div
-                  key={ev.id}
-                  style={{
-                    fontSize: 10,
-                    background: ev.source === 'google' ? '#68A8C0' : '#0C7870',
-                    color: '#fff',
-                    borderRadius: 4,
-                    padding: '2px 4px',
-                    marginTop: 3,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {ev.title}
-                </div>
-              ))}
+              {dayEvents.slice(0, 2).map((ev) => {
+                const isConsult = ev.source === 'google' && ev.title.includes('استفسار')
+                const bg = isConsult ? '#D9A441' : ev.source === 'google' ? '#68A8C0' : '#0C7870'
+                return (
+                  <div
+                    key={ev.id}
+                    style={{
+                      fontSize: 10,
+                      background: bg,
+                      color: '#fff',
+                      borderRadius: 4,
+                      padding: '2px 4px',
+                      marginTop: 3,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {ev.title}
+                  </div>
+                )
+              })}
               {dayEvents.length > 2 && (
                 <div style={{ fontSize: 10, color: '#68A8C0', marginTop: 2 }}>+{dayEvents.length - 2} أخرى</div>
               )}
@@ -151,9 +155,10 @@ export default function Calendar({ events, members, memberName, refresh, showToa
         })}
       </div>
 
-      <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: 12, color: '#68A8C0' }}>
+      <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: 12, color: '#68A8C0', flexWrap: 'wrap' }}>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#0C7870', borderRadius: 3, marginLeft: 4 }} /> مواعيد المنصة</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#68A8C0', borderRadius: 3, marginLeft: 4 }} /> مواعيد قوقل (حجوزات)</span>
+        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#D9A441', borderRadius: 3, marginLeft: 4 }} /> حجز موعد استفسار</span>
       </div>
 
       {selectedDay && (
@@ -175,7 +180,11 @@ export default function Calendar({ events, members, memberName, refresh, showToa
                   <div>
                     <strong>{ev.title}</strong>
                     {ev.start_time && <span style={{ color: '#68A8C0', fontSize: 12 }}> — {ev.start_time}</span>}
-                    {ev.source === 'google' && <span className="badge" style={{ background: '#68A8C0', marginRight: 8, fontSize: 10 }}>قوقل</span>}
+                    {ev.source === 'google' && (
+                      <span className="badge" style={{ background: ev.title.includes('استفسار') ? '#D9A441' : '#68A8C0', marginRight: 8, fontSize: 10 }}>
+                        {ev.title.includes('استفسار') ? 'استفسار' : 'قوقل'}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))
