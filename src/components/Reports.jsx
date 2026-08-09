@@ -85,7 +85,7 @@ export default function Reports({ projects, tasks, members, memberName, showToas
 
       <div className="report-preview">
         <div id="pdf-report-content">
-          <h1>تقرير رحلة تحوّل</h1>
+          <h1>تقرير مهام/ مشاريع إدارة التحول</h1>
           <p>النطاق: {scope === 'team' ? 'الفريق كاملًا' : scope === 'project' ? (projects.find((p) => p.id === projectId)?.name || '—') : memberName(memberId)}</p>
           <p style={{ color: '#68A8C0', fontSize: 13 }}>تاريخ الإصدار: {formatDate(new Date().toISOString())}</p>
 
