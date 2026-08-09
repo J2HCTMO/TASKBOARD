@@ -82,12 +82,17 @@ export default function Dashboard({ projects, tasks, members, memberName }) {
 
   return (
     <div>
+      <h3 style={{ color: '#083838', marginBottom: 10 }}>المشاريع والمهام</h3>
       <div className="stat-cards">
         <StatCard label="إجمالي المشاريع" value={totalProjects} />
         <StatCard label="مشاريع مكتملة" value={doneProjects} />
         <StatCard label="مشاريع قيد التنفيذ" value={inProgressProjects} />
         <StatCard label="إجمالي المهام" value={totalTasks} />
         <StatCard label="مهام مكتملة" value={doneTasks} />
+      </div>
+
+      <h3 style={{ color: '#083838', marginTop: 24, marginBottom: 10 }}>الجلسات الاستشارية</h3>
+      <div className="stat-cards">
         <StatCard label="جلسات استشارية هذا الشهر" value={consultThisMonth} />
         <StatCard label="إجمالي الجلسات الاستشارية" value={consultTotal} />
         <StatCard label="جلسات استشارية قادمة" value={consultUpcoming} />
