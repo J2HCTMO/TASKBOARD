@@ -10,6 +10,7 @@ import Calendar from './components/Calendar'
 import Team from './components/Team'
 import SearchResults from './components/SearchResults'
 import Reports from './components/Reports'
+import Login from './components/Login'
 
 const PAGE_TITLES = {
   dashboard: 'لوحة المعلومات',
@@ -24,6 +25,8 @@ const PAGE_TITLES = {
 }
 
 export default function App() {
+  const [authed, setAuthed] = useState(() => localStorage.getItem('tahawwul_auth') === 'true')
+
   const [page, setPage] = useState('dashboard')
   const [selectedProjectId, setSelectedProjectId] = useState(null)
   const [selectedTaskId, setSelectedTaskId] = useState(null)
@@ -62,6 +65,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    if (!authed) return
     fetchAll()
 
     const channel = supabase
@@ -76,7 +80,11 @@ export default function App() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [fetchAll])
+  }, [fetchAll, authed])
+
+  if (!authed) {
+    return <Login onSuccess={() => setAuthed(true)} />
+  }
 
   function goToProject(id) {
     setSelectedProjectId(id)
@@ -103,6 +111,11 @@ export default function App() {
     setPage(target)
   }
 
+  function logout() {
+    localStorage.removeItem('tahawwul_auth')
+    setAuthed(false)
+  }
+
   const memberName = (id) => members.find((m) => m.id === id)?.name || '—'
   const projectName = (id) => projects.find((p) => p.id === id)?.name || '—'
   const taskName = (id) => tasks.find((t) => t.id === id)?.name || '—'
@@ -124,6 +137,22 @@ export default function App() {
                 if (e.key === 'Enter' && searchInput.trim()) runSearch(searchInput.trim())
               }}
             />
+            <button
+              onClick={logout}
+              title="تسجيل الخروج"
+              style={{
+                marginRight: 10,
+                background: 'transparent',
+                border: '1px solid #68A8C0',
+                borderRadius: 6,
+                padding: '6px 12px',
+                fontSize: 12,
+                color: '#083838',
+                cursor: 'pointer',
+              }}
+            >
+              خروج
+            </button>
           </div>
         </div>
 
