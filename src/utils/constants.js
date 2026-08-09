@@ -8,9 +8,11 @@ export const BRAND = {
   mint: '#88D0C8',
 }
 
+// تُستخدم بشكل عام (المهام، الأنشطة، ...) — بقيت كما هي بدون تغيير
 export const STATUS_COLUMNS = [
-  { key: 'todo', label: 'لم يتم البدء' },
+  { key: 'todo', label: 'قيد الانتظار' },
   { key: 'build', label: 'قيد التنفيذ' },
+  { key: 'test', label: 'قيد المراجعة' },
   { key: 'done', label: 'مكتمل' },
 ]
 
@@ -18,15 +20,20 @@ export const STATUS_LABELS = STATUS_COLUMNS.reduce((acc, s) => {
   acc[s.key] = s.label
   return acc
 }, {})
-// دمج التصنيف القديم "قيد المراجعة" (test) ضمن "قيد التنفيذ" بدون الحاجة لتعديل البيانات المخزّنة
-STATUS_LABELS.test = 'قيد التنفيذ'
 
 export const STATUS_COLORS = {
   todo: '#94A3B8',
   build: BRAND.steelBlue,
-  test: BRAND.steelBlue,
+  test: '#D9A441',
   done: BRAND.teal,
 }
+
+// تُستخدم فقط في صفحة "المشاريع" — دمج قيد الانتظار ← لم يتم البدء، وقيد المراجعة ← قيد التنفيذ
+export const PROJECT_STATUS_COLUMNS = [
+  { key: 'todo', label: 'لم يتم البدء' },
+  { key: 'build', label: 'قيد التنفيذ' },
+  { key: 'done', label: 'مكتمل' },
+]
 
 export const PRIORITY_OPTIONS = [
   { key: 'high', label: 'عالية', color: '#D64545' },
