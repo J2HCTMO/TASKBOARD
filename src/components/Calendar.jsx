@@ -157,7 +157,7 @@ export default function Calendar({ events, members, memberName, refresh, showToa
 
       <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: 12, color: '#68A8C0', flexWrap: 'wrap' }}>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#0C7870', borderRadius: 3, marginLeft: 4 }} /> مواعيد المنصة</span>
-        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#68A8C0', borderRadius: 3, marginLeft: 4 }} /> مواعيد قوقل (حجوزات)</span>
+        <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#68A8C0', borderRadius: 3, marginLeft: 4 }} /> Google calendar</span>
         <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#D9A441', borderRadius: 3, marginLeft: 4 }} /> حجز موعد استفسار</span>
       </div>
 
