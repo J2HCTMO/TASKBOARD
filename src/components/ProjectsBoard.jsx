@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react'
 import { DndContext, useDraggable, useDroppable, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { supabase } from '../supabaseClient'
 import ProjectModal from './ProjectModal'
-import { STATUS_COLUMNS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate } from '../utils/constants'
+import { PROJECT_STATUS_COLUMNS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate } from '../utils/constants'
 
 export default function ProjectsBoard({ projects, members, memberName, onOpenProject, refresh, showToast }) {
   const [modalProject, setModalProject] = useState('none') // 'none' | null (new) | project object
@@ -63,9 +63,9 @@ export default function ProjectsBoard({ projects, members, memberName, onOpenPro
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           <div
             className="kanban-board"
-            style={{ display: 'grid', gridTemplateColumns: `repeat(${STATUS_COLUMNS.length}, 1fr)`, gap: 16, width: '100%' }}
+            style={{ display: 'grid', gridTemplateColumns: `repeat(${PROJECT_STATUS_COLUMNS.length}, 1fr)`, gap: 16, width: '100%' }}
           >
-            {STATUS_COLUMNS.map((col) => (
+            {PROJECT_STATUS_COLUMNS.map((col) => (
               <Column
                 key={col.key}
                 col={col}
