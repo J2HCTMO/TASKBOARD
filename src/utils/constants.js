@@ -9,9 +9,8 @@ export const BRAND = {
 }
 
 export const STATUS_COLUMNS = [
-  { key: 'todo', label: 'قيد الانتظار' },
+  { key: 'todo', label: 'لم يتم البدء' },
   { key: 'build', label: 'قيد التنفيذ' },
-  { key: 'test', label: 'قيد المراجعة' },
   { key: 'done', label: 'مكتمل' },
 ]
 
@@ -19,11 +18,13 @@ export const STATUS_LABELS = STATUS_COLUMNS.reduce((acc, s) => {
   acc[s.key] = s.label
   return acc
 }, {})
+// دمج التصنيف القديم "قيد المراجعة" (test) ضمن "قيد التنفيذ" بدون الحاجة لتعديل البيانات المخزّنة
+STATUS_LABELS.test = 'قيد التنفيذ'
 
 export const STATUS_COLORS = {
   todo: '#94A3B8',
   build: BRAND.steelBlue,
-  test: '#D9A441',
+  test: BRAND.steelBlue,
   done: BRAND.teal,
 }
 
@@ -32,12 +33,10 @@ export const PRIORITY_OPTIONS = [
   { key: 'medium', label: 'متوسطة', color: '#D9A441' },
   { key: 'low', label: 'منخفضة', color: BRAND.teal },
 ]
-
 export const PRIORITY_LABELS = PRIORITY_OPTIONS.reduce((acc, p) => {
   acc[p.key] = p.label
   return acc
 }, {})
-
 export const PRIORITY_COLORS = PRIORITY_OPTIONS.reduce((acc, p) => {
   acc[p.key] = p.color
   return acc
