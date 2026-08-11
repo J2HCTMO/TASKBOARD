@@ -99,7 +99,7 @@ export default function AllBoard({ tasks, activities, projects, members, memberN
           onClick={() => setShowHidden((v) => !v)}
           style={{ fontSize: 13 }}
         >
-          {showHidden ? '← رجوع للقائمة العادية' : 'عرض المهام المكتملة'}
+          {showHidden ? '← رجوع للقائمة العادية' : 'عرض المهام المكتملة/المخفية'}
         </button>
       </div>
 
@@ -196,7 +196,7 @@ function ItemCard({ item, memberName, onOpen, isDone, onToggleHide, showHidden }
             className="btn btn-secondary"
             style={{ padding: '4px 10px', fontSize: 12 }}
             onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => onToggleHide(item, !showHidden)}
+            onClick={() => oالمكتمnToggleHide(item, !showHidden)}
             title={showHidden ? 'إظهار العنصر بهذي الصفحة' : 'إخفاء العنصر من هذي الصفحة فقط'}
           >
             {showHidden ? 'إظهار' : 'إخفاء'}
