@@ -68,9 +68,11 @@ export default function AllBoard({ tasks, activities, projects, members, memberN
   }
 
   async function handleToggleHide(item, hide) {
+    console.log('HIDE CLICK →', item.type, item.id, 'hide:', hide)
     const table = item.type === 'task' ? 'tasks' : 'activities'
-    const { error } = await supabase.from(table).update({ hidden: hide }).eq('id', item.id)
-    if (error) showToast('تعذّر تحديث الإخفاء')
+    const { data, error } = await supabase.from(table).update({ hidden: hide }).eq('id', item.id).select()
+    console.log('HIDE RESULT →', { data, error })
+    if (error) showToast('تعذّر تحديث الإخفاء: ' + error.message)
     else {
       showToast(hide ? 'تم إخفاء العنصر من هذي الصفحة' : 'تم إظهار العنصر')
       refresh()
@@ -184,19 +186,30 @@ function ItemCard({ item, memberName, onOpen, isDone, onToggleHide, showHidden }
       <div style={{ fontSize: 11, color: '#68A8C0', marginTop: 4 }}>{item.context}</div>
       <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
         <button
+          type="button"
           className="btn btn-secondary"
           style={{ padding: '4px 10px', fontSize: 12 }}
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => onOpen(item)}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpen(item)
+          }}
         >
           فتح
         </button>
         {(isDone || showHidden) && (
           <button
+            type="button"
             className="btn btn-secondary"
             style={{ padding: '4px 10px', fontSize: 12 }}
             onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => oالمكتمnToggleHide(item, !showHidden)}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onToggleHide(item, !showHidden)
+            }}
             title={showHidden ? 'إظهار العنصر بهذي الصفحة' : 'إخفاء العنصر من هذي الصفحة فقط'}
           >
             {showHidden ? 'إظهار' : 'إخفاء'}
