@@ -191,15 +191,17 @@ function ItemCard({ item, memberName, onOpen, isDone, onToggleHide, showHidden }
         >
           فتح
         </button>
-        <button
-          className="btn btn-secondary"
-          style={{ padding: '4px 10px', fontSize: 12 }}
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={() => onToggleHide(item, !showHidden)}
-          title={showHidden ? 'إظهار العنصر بهذي الصفحة' : 'إخفاء العنصر من هذي الصفحة فقط'}
-        >
-          {showHidden ? 'إظهار' : 'إخفاء'}
-        </button>
+        {(isDone || showHidden) && (
+          <button
+            className="btn btn-secondary"
+            style={{ padding: '4px 10px', fontSize: 12 }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => onToggleHide(item, !showHidden)}
+            title={showHidden ? 'إظهار العنصر بهذي الصفحة' : 'إخفاء العنصر من هذي الصفحة فقط'}
+          >
+            {showHidden ? 'إظهار' : 'إخفاء'}
+          </button>
+        )}
       </div>
     </div>
   )
