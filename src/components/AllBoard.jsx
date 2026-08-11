@@ -99,7 +99,7 @@ export default function AllBoard({ tasks, activities, projects, members, memberN
           onClick={() => setShowHidden((v) => !v)}
           style={{ fontSize: 13 }}
         >
-          {showHidden ? '← رجوع للقائمة العادية' : 'عرض العناصر المخفية'}
+          {showHidden ? '← رجوع للقائمة العادية' : 'عرض المهام المكتملة'}
         </button>
       </div>
 
